@@ -32,8 +32,8 @@ for i in range(15):
         linReg = linear_model.LinearRegression()
         linReg.fit(X_train, Y_train)
         Y_pred_linReg = linReg.predict(X_test)
-        Y_pred_linReg_c = np.reshape(Y_pred_linReg, (int(15/N_splits),1))
-        SSE_linear = np.linalg.norm(Y_test-Y_pred_linReg_c)**2
+        #Y_pred_linReg_c = np.reshape(Y_pred_linReg, (int(15/N_splits),1))
+        SSE_linear = np.linalg.norm(Y_test-Y_pred_linReg)**2
         SSE_fold_linear.append(SSE_linear)
         # temos vetor coluna com valores de Y, calcular SSE e somar a total, no fim calcular media
         
@@ -41,8 +41,8 @@ for i in range(15):
         ridReg = linear_model.Ridge()
         ridReg.fit(X_train, Y_train)
         Y_pred_ridReg = ridReg.predict(X_test)
-        Y_pred_ridReg_c = np.reshape(Y_pred_ridReg, (int(15/N_splits),1))
-        SSE_ridge = np.linalg.norm(Y_test-Y_pred_ridReg_c)**2
+        #Y_pred_ridReg_c = np.reshape(Y_pred_ridReg, (int(15/N_splits),1))
+        SSE_ridge = np.linalg.norm(Y_test-Y_pred_ridReg)**2
         SSE_fold_ridge.append(SSE_ridge)
         # temos vetor coluna com valores de Y, calcular SSE e somar a total, no fim calcular media
         
