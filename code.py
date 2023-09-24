@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 
 from sklearn import linear_model
@@ -54,10 +53,6 @@ for i in range(15):
         SSE_lasso = np.linalg.norm(Y_test-Y_pred_lasReg_c)**2
         SSE_fold_lasso.append(SSE_lasso)
         # temos vetor coluna com valores de Y, calcular SSE e somar a total, no fim calcular media
-        
-        #TODO
-        #calcular totais de SSE, somar todos e fazer media no fim. comparar SSE dos 3 modelos para definir o melhor
-        # RESHAPE DESNECESSARIO?
 
     SSE_all_linear.append(np.mean(SSE_fold_linear))  
     SSE_all_ridge.append(np.mean(SSE_fold_ridge))
