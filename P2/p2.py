@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.cluster import KMeans
+from sklearn.mixture import GaussianMixture
 from sklearn import linear_model
 from sklearn.model_selection import LeaveOneOut
 from sklearn.model_selection import cross_val_score
@@ -24,7 +25,7 @@ SSE_fold_linear_1 = []
 SSE_fold_ridge_1 = []
 SSE_fold_lasso_1 = []
 
-
+##KMEANS
 kmeans = KMeans(n_clusters=2, random_state=42)
 kmeans.fit(Xtrain)
 Y_train_clusters = kmeans.predict(Xtrain)
@@ -48,10 +49,37 @@ axs[0,0].scatter(X_train_cluster_1[:, 0], Y_train_cluster_1)
 axs[0,1].scatter(X_train_cluster_1[:, 1], Y_train_cluster_1)
 axs[1,0].scatter(X_train_cluster_1[:, 2], Y_train_cluster_1)
 axs[1,1].scatter(X_train_cluster_1[:, 3], Y_train_cluster_1)
-#plt.scatter(Xtrain, Ytrain, c="r")
+plt.title("KMeans")
 plt.show()
 
-#está dividido em dois clusters, supostamente cada um para um modelo distinto.
+##GAUSSIAN
+gaussian = GaussianMixture(n_components=2, random_state=42)
+gaussian.fit(Xtrain)
+Y_train_clusters = gaussian.predict(Xtrain)
+Y_test_clusters = gaussian.predict(Xtest)
+
+X_train_cluster_0 = Xtrain[Y_train_clusters == 0]
+X_train_cluster_1 = Xtrain[Y_train_clusters == 1]
+
+Y_train_cluster_0 = Ytrain[Y_train_clusters == 0]
+Y_train_cluster_1 = Ytrain[Y_train_clusters == 1]
+
+
+fig, axs = plt.subplots(2, 2)
+
+axs[0,0].scatter(X_train_cluster_0[:, 0], Y_train_cluster_0)
+axs[0,1].scatter(X_train_cluster_0[:, 1], Y_train_cluster_0)
+axs[1,0].scatter(X_train_cluster_0[:, 2], Y_train_cluster_0)
+axs[1,1].scatter(X_train_cluster_0[:, 3], Y_train_cluster_0)
+
+axs[0,0].scatter(X_train_cluster_1[:, 0], Y_train_cluster_1)
+axs[0,1].scatter(X_train_cluster_1[:, 1], Y_train_cluster_1)
+axs[1,0].scatter(X_train_cluster_1[:, 2], Y_train_cluster_1)
+axs[1,1].scatter(X_train_cluster_1[:, 3], Y_train_cluster_1)
+plt.title("Gaussian")
+plt.show()
+
+
 
 loo = LeaveOneOut()
 
