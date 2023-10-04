@@ -3,6 +3,8 @@ from sklearn.cluster import KMeans
 from sklearn import linear_model
 from sklearn.model_selection import LeaveOneOut
 from sklearn.model_selection import cross_val_score
+import matplotlib.pyplot as plt
+
 
 Xtest = np.load('X_test_regression2.npy')
 Xtrain = np.load('X_train_regression2.npy') 
@@ -33,6 +35,21 @@ X_train_cluster_1 = Xtrain[Y_train_clusters == 1]
 
 Y_train_cluster_0 = Ytrain[Y_train_clusters == 0]
 Y_train_cluster_1 = Ytrain[Y_train_clusters == 1]
+
+
+fig, axs = plt.subplots(2, 2)
+
+axs[0,0].scatter(X_train_cluster_0[:, 0], Y_train_cluster_0)
+axs[0,1].scatter(X_train_cluster_0[:, 1], Y_train_cluster_0)
+axs[1,0].scatter(X_train_cluster_0[:, 2], Y_train_cluster_0)
+axs[1,1].scatter(X_train_cluster_0[:, 3], Y_train_cluster_0)
+
+axs[0,0].scatter(X_train_cluster_1[:, 0], Y_train_cluster_1)
+axs[0,1].scatter(X_train_cluster_1[:, 1], Y_train_cluster_1)
+axs[1,0].scatter(X_train_cluster_1[:, 2], Y_train_cluster_1)
+axs[1,1].scatter(X_train_cluster_1[:, 3], Y_train_cluster_1)
+#plt.scatter(Xtrain, Ytrain, c="r")
+plt.show()
 
 #está dividido em dois clusters, supostamente cada um para um modelo distinto.
 
