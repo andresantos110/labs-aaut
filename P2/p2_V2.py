@@ -174,7 +174,7 @@ for train_index, test_index in loo.split(X_train_cluster_0):
     lasReg = linear_model.Lasso(alpha=lasso_cv.alpha_)
     lasReg.fit(X_train, Y_train)
     Y_pred_lasReg = lasReg.predict(X_test)
-    Y_pred_lasReg_c = np.reshape(Y_pred_lasReg, (1,1)) #necessario reshape para vetor Y_pred ficar com dimensao (1,1)
+    Y_pred_lasReg_c = np.reshape(Y_pred_lasReg, (1,1)) #necessario reshape
     SSE_lasso_0 = np.linalg.norm(Y_test-Y_pred_lasReg_c)**2
     #SSE_fold_lasso_0.append(SSE_lasso_0)
     SSE_fold_lasso_0[test_index] = SSE_lasso_0
@@ -210,7 +210,7 @@ for train_index, test_index in loo.split(X_train_cluster_1):
     lasReg = linear_model.Lasso(alpha=lasso_cv.alpha_)
     lasReg.fit(X_train, Y_train)
     Y_pred_lasReg = lasReg.predict(X_test)
-    Y_pred_lasReg_c = np.reshape(Y_pred_lasReg, (1,1)) #necessario reshape para vetor Y_pred ficar com dimensao (1,1)
+    Y_pred_lasReg_c = np.reshape(Y_pred_lasReg, (1,1)) #necessario reshape
     SSE_lasso_1 = np.linalg.norm(Y_test-Y_pred_lasReg_c)**2
     #SSE_fold_lasso_1.append(SSE_lasso_1)
     SSE_fold_lasso_1[test_index] = SSE_lasso_1
@@ -257,6 +257,7 @@ elif(flag1 == 2):
     lasRegFinal = linear_model.Lasso(alpha=lasso_cvFinal.alpha_)
     lasRegFinal.fit(Xtrain, Ytrain)
     Y_pred1 = lasRegFinal.predict(Xtest)
+    Y_pred1 = np.reshape(Y_pred1, (1000,1))
 
 
 if(flag2 == 0):
@@ -273,9 +274,10 @@ elif(flag2 == 2):
     lasRegFinal = linear_model.Lasso(alpha=lasso_cvFinal.alpha_)
     lasRegFinal.fit(Xtrain, Ytrain)
     Y_pred2 = lasRegFinal.predict(Xtest)
+    Y_pred2 = np.reshape(Y_pred2, (1000,1))
 
-np.stack(Y_pred1, Y_pred2)
-print(Y_pred1)
+final = np.hstack((Y_pred1, Y_pred2))
+np.save("Y_test2", final)
     
     
     
