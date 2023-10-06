@@ -42,6 +42,7 @@ def plotter(X0, Y0, X1, Y1, mode, title):
         plt.show()
 
 
+
 Xtest = np.load('X_test_regression2.npy')
 Xtrain = np.load('X_train_regression2.npy') 
 Ytrain = np.load('y_train_regression2.npy')
@@ -49,16 +50,10 @@ Ytrain = np.load('y_train_regression2.npy')
 SSE_linear_0 = 0
 SSE_ridge_0 = 0
 SSE_lasso_0 = 0
-SSE_fold_linear_0 = []
-SSE_fold_ridge_0 = []
-SSE_fold_lasso_0 = []
 
 SSE_linear_1 = 0
 SSE_ridge_1 = 0
 SSE_lasso_1 = 0
-SSE_fold_linear_1 = []
-SSE_fold_ridge_1 = []
-SSE_fold_lasso_1 = []
 
 show_graphs=0 # defaults to no graphs
 
@@ -114,15 +109,23 @@ elif(fit == 2): ##GAUSSIAN
     Y_train_cluster_0 = Y_train_cluster_0_g
     X_train_cluster_1 = X_train_cluster_1_g
     Y_train_cluster_1 = Y_train_cluster_1_g
+    
 else:
     print("Invalid")
     exit
 
+SSE_fold_linear_0 = np.zeros_like(X_train_cluster_0)
+SSE_fold_ridge_0 = np.zeros_like(X_train_cluster_0)
+SSE_fold_lasso_0 = np.zeros_like(X_train_cluster_0)
+SSE_fold_linear_1 = np.zeros_like(X_train_cluster_1)
+SSE_fold_ridge_1 = np.zeros_like(X_train_cluster_1)
+SSE_fold_lasso_1 = np.zeros_like(X_train_cluster_1)
 
 loo = LeaveOneOut()
 
+
 for train_index, test_index in loo.split(X_train_cluster_0):
-    
+        
     X_train, X_test = X_train_cluster_0[train_index], X_train_cluster_0[test_index]
     Y_train, Y_test = Y_train_cluster_0[train_index], Y_train_cluster_0[test_index]
     
@@ -131,7 +134,8 @@ for train_index, test_index in loo.split(X_train_cluster_0):
     linReg.fit(X_train, Y_train)
     Y_pred_linReg = linReg.predict(X_test)
     SSE_linear_0 = np.linalg.norm(Y_test-Y_pred_linReg)**2
-    SSE_fold_linear_0.append(SSE_linear_0)
+    #SSE_fold_linear_0.append(SSE_linear_0)
+    SSE_fold_linear_0[test_index] = SSE_linear_0
     
     # Ridge Regression
     ridge_cv = linear_model.RidgeCV(cv=5).fit(X_train, Y_train)
@@ -139,7 +143,8 @@ for train_index, test_index in loo.split(X_train_cluster_0):
     ridReg.fit(X_train, Y_train)
     Y_pred_ridReg = ridReg.predict(X_test)
     SSE_ridge_0 = np.linalg.norm(Y_test-Y_pred_ridReg)**2
-    SSE_fold_ridge_0.append(SSE_ridge_0)
+    #SSE_fold_ridge_0.append(SSE_ridge_0)
+    SSE_fold_ridge_0[test_index] = SSE_ridge_0
     
     # Lasso Regression
     lasso_cv = linear_model.LassoCV(random_state = 42).fit(X_train, Y_train.ravel())
@@ -148,14 +153,14 @@ for train_index, test_index in loo.split(X_train_cluster_0):
     Y_pred_lasReg = lasReg.predict(X_test)
     Y_pred_lasReg_c = np.reshape(Y_pred_lasReg, (1,1)) #necessario reshape para vetor Y_pred ficar com dimensao (1,1)
     SSE_lasso_0 = np.linalg.norm(Y_test-Y_pred_lasReg_c)**2
-    SSE_fold_lasso_0.append(SSE_lasso_0)
+    #SSE_fold_lasso_0.append(SSE_lasso_0)
+    SSE_fold_lasso_0[test_index] = SSE_lasso_0
     
 print("SSE_linear_0 = ", np.mean(SSE_fold_linear_0))
 print("SSE_ridge_0 = ", np.mean(SSE_fold_ridge_0))
 print("SSE_lasso_0 = ", np.mean(SSE_fold_lasso_0))
 
 for train_index, test_index in loo.split(X_train_cluster_1):
-    
     
     X_train, X_test = X_train_cluster_1[train_index], X_train_cluster_1[test_index]
     Y_train, Y_test = Y_train_cluster_1[train_index], Y_train_cluster_1[test_index]
@@ -165,7 +170,8 @@ for train_index, test_index in loo.split(X_train_cluster_1):
     linReg.fit(X_train, Y_train)
     Y_pred_linReg = linReg.predict(X_test)
     SSE_linear_1 = np.linalg.norm(Y_test-Y_pred_linReg)**2
-    SSE_fold_linear_1.append(SSE_linear_1)
+    #SSE_fold_linear_1.append(SSE_linear_1)
+    SSE_fold_linear_1[test_index] = SSE_linear_1
     
     # Ridge Regression
     ridge_cv = linear_model.RidgeCV().fit(X_train, Y_train)
@@ -173,7 +179,8 @@ for train_index, test_index in loo.split(X_train_cluster_1):
     ridReg.fit(X_train, Y_train)
     Y_pred_ridReg = ridReg.predict(X_test)
     SSE_ridge_1 = np.linalg.norm(Y_test-Y_pred_ridReg)**2
-    SSE_fold_ridge_1.append(SSE_ridge_1)
+    #SSE_fold_ridge_1.append(SSE_ridge_1)
+    SSE_fold_ridge_1[test_index] = SSE_ridge_1
     
     # Lasso Regression
     lasso_cv = linear_model.LassoCV(random_state = 42).fit(X_train, Y_train.ravel())
@@ -182,7 +189,8 @@ for train_index, test_index in loo.split(X_train_cluster_1):
     Y_pred_lasReg = lasReg.predict(X_test)
     Y_pred_lasReg_c = np.reshape(Y_pred_lasReg, (1,1)) #necessario reshape para vetor Y_pred ficar com dimensao (1,1)
     SSE_lasso_1 = np.linalg.norm(Y_test-Y_pred_lasReg_c)**2
-    SSE_fold_lasso_1.append(SSE_lasso_1)
+    #SSE_fold_lasso_1.append(SSE_lasso_1)
+    SSE_fold_lasso_1[test_index] = SSE_lasso_1
     
 print("SSE_linear_1 = ", np.mean(SSE_fold_linear_1))
 print("SSE_ridge_1 = ", np.mean(SSE_fold_ridge_1))
