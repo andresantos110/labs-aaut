@@ -60,7 +60,7 @@ show_graphs=0 # defaults to no graphs
 # input arguments: -f "1-KMeans/2-Gaussian" -g "0-no graphs/1-show graphs"
 # -g is optional, default is 0
 
-if(sys.argv[1] == "-f" and (sys.argv[2]=='1' or sys.argv[2]=='2')):
+if(sys.argv[1] == "-f" and (sys.argv[2]=='1' or sys.argv[2]=='2' or sys.argv[2] == '3')):
     fit = int(sys.argv[2])
 if(len(sys.argv) > 3):
     if(sys.argv[3] == "-g" and (sys.argv[4]=='0' or sys.argv[4]=='1')):
@@ -109,6 +109,23 @@ elif(fit == 2): ##GAUSSIAN
     Y_train_cluster_0 = Y_train_cluster_0_g
     X_train_cluster_1 = X_train_cluster_1_g
     Y_train_cluster_1 = Y_train_cluster_1_g
+
+elif(fit ==3): #LINEAR REGRESSION
+    splitReg = linReg = linear_model.LinearRegression().fit(Xtrain, Ytrain)
+    Y_pred_splitReg = splitReg.predict(Xtrain)
+    
+    threshold = np.std(Y_pred_splitReg) ##TEMPORARIO
+    
+    Y_pred_splitReg = Y_pred_splitReg.flatten()
+        
+    X_train_cluster_0 = Xtrain[Y_pred_splitReg > threshold]
+    Y_train_cluster_0 = Ytrain[Y_pred_splitReg > threshold]
+    X_train_cluster_1 = Xtrain[Y_pred_splitReg <= threshold]
+    Y_train_cluster_1 = Ytrain[Y_pred_splitReg <= threshold]
+
+    if(show_graphs==1):
+        plotter(X_train_cluster_0, Y_train_cluster_0, X_train_cluster_1, Y_train_cluster_1, 2, "Linear")
+
     
 else:
     print("Invalid")
