@@ -57,12 +57,13 @@ SSE_ridge_1 = 0
 SSE_lasso_1 = 0
 
 show_graphs=0 # defaults to no graphs
+fit = 3 #defaults to linear regression
 
 # input arguments: -f "1-KMeans/2-Gaussian" -g "0-no graphs/1-show graphs"
 # -g is optional, default is 0
-
-if(sys.argv[1] == "-f" and (sys.argv[2]=='1' or sys.argv[2]=='2' or sys.argv[2] == '3')):
-    fit = int(sys.argv[2])
+if(len(sys.argv) > 2):
+    if(sys.argv[1] == "-f" and (sys.argv[2]=='1' or sys.argv[2]=='2' or sys.argv[2] == '3')):
+        fit = int(sys.argv[2])
 if(len(sys.argv) > 3):
     if(sys.argv[3] == "-g" and (sys.argv[4]=='0' or sys.argv[4]=='1')):
         show_graphs = int(sys.argv[4])
