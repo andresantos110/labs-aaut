@@ -2,7 +2,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import  train_test_split
 import tensorflow as tf
-from tensorflow.keras import datasets, layers, models
+from tensorflow.keras import layers, models
+from keras import backend as K
+from tensorflow.keras.callbacks import EarlyStopping
+
+def recall_m(y_true, y_pred):
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+    possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
+    recall = true_positives / (possible_positives + K.epsilon())
+    return recall
+
+def precision_m(y_true, y_pred):
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
+    precision = true_positives / (predicted_positives + K.epsilon())
+    return precision
+
+def f1_m(y_true, y_pred):
+    precision = precision_m(y_true, y_pred)
+    recall = recall_m(y_true, y_pred)
+    return 2*((precision*recall)/(precision+recall+K.epsilon()))
 
 
 Xtest = np.load('Xtest_Classification1.npy')
@@ -31,11 +50,15 @@ model.add(layers.Flatten())
 model.add(layers.Dense(32, activation='relu'))
 model.add(layers.Dense(2))
 
-model.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-              metrics=['accuracy'])
+early_stopping = EarlyStopping(monitor='f1_m', mode='max', patience=20)
 
-history = model.fit(X_train, Y_train, epochs = 100, batch_size = 100, verbose=0, validation_data = (X_test,Y_test))
+model.compile(optimizer='adam',
+              loss='binary_crossentropy',
+              metrics=['accuracy',f1_m,precision_m, recall_m])
+
+model.summary()
+
+history = model.fit(X_train, Y_train, epochs = 10, validation_data = (X_test,Y_test), callbacks = [early_stopping])
 
 plt.plot(history.history['accuracy'], label='accuracy')
 plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
@@ -43,5 +66,6 @@ plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.ylim([0.5, 1])
 plt.legend(loc='lower right')
+plt.show()
 
-test_loss, test_acc = model.evaluate(X_test,  Y_test, verbose=2)
+test_loss, test_acc, test_f1, test_precision, test_recall = model.evaluate(X_test,  Y_test, verbose=2)
