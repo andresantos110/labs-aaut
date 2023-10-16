@@ -6,6 +6,7 @@ from tensorflow.keras import layers, models
 from keras import backend as K
 from tensorflow.keras.callbacks import EarlyStopping
 from imblearn.over_sampling import SMOTE
+from imblearn.combine import SMOTEENN
 
 #DEFINE FUNCTIONS FOR CALCULATING F1 SCORE
 def recall_m(y_true, y_pred):
@@ -43,7 +44,14 @@ Ytrain = np.load('ytrain_Classification1.npy')
 X_train, X_test, Y_train, Y_test = train_test_split(Xtrain,Ytrain,test_size=0.2)
 
 #SMOTE
-smote = SMOTE(sampling_strategy='auto', random_state=42)
+smote = SMOTE(random_state=42)
+
+#SMOTEENN
+#over-sampling com SMOTE + under-sampling com ENN (edited nearest neighbours)
+#pode ser viavel, mas é bastante instável (varia muito entre runs).
+
+#smote = SMOTEENN(random_state=42, sampling_strategy = 0.70)
+
 X_train, Y_train = smote.fit_resample(X_train, Y_train) #está a dar mal por causa do early stopping? idk
 
 X_train = X_train.reshape(len(X_train), 28, 28, 3)
