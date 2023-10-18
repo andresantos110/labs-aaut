@@ -52,7 +52,7 @@ X_train, X_test, Y_train, Y_test = train_test_split(Xtrain,Ytrain,test_size=0.2)
 #over-sampling com SMOTE + under-sampling com ENN (edited nearest neighbours)
 #pode ser viavel, mas é bastante instável (varia muito entre runs).
 
-smote = SMOTEN(sampling_strategy = 0.3, random_state=42)
+smote = SMOTEN(sampling_strategy = 0.3, random_state=42) 
 
 #smoteenn = SMOTEENN(random_state=42, smote=smote)
 
