@@ -5,10 +5,13 @@ import tensorflow as tf
 from tensorflow.keras import layers, models
 from keras import backend as K
 from tensorflow.keras.callbacks import EarlyStopping
+from imblearn.under_sampling import EditedNearestNeighbours
 from imblearn.over_sampling import SMOTE
 from imblearn.combine import SMOTEENN
-from imblearn.under_sampling import EditedNearestNeighbours
 from imblearn.over_sampling import SMOTEN
+from imblearn.over_sampling import SVMSMOTE
+from imblearn.over_sampling import BorderlineSMOTE
+from imblearn.over_sampling import ADASYN
 
 #DEFINE FUNCTIONS FOR CALCULATING F1 SCORE
 def recall_m(y_true, y_pred):
@@ -52,11 +55,17 @@ X_train, X_test, Y_train, Y_test = train_test_split(Xtrain,Ytrain,test_size=0.2)
 #over-sampling com SMOTE + under-sampling com ENN (edited nearest neighbours)
 #pode ser viavel, mas é bastante instável (varia muito entre runs).
 
-smote = SMOTEN(sampling_strategy = 0.3, random_state=42) 
+#smote = SMOTEN(sampling_strategy = 0.3, random_state=42) 
 
 #smoteenn = SMOTEENN(random_state=42, smote=smote)
 
-X_train, Y_train = smote.fit_resample(X_train, Y_train) #está a dar mal por causa do early stopping? idk
+svmsmote = SVMSMOTE(sampling_strategy = 0.3, random_state = 42)
+
+#borderlinesmote = BorderlineSMOTE(sampling_strategy = 0.3, random_state = 42)
+
+#adasyn = ADASYN(sampling_strategy = 0.3, random_state = 42)
+
+X_train, Y_train = svmsmote.fit_resample(X_train, Y_train)
 
 X_train = X_train.reshape(len(X_train), 28, 28, 3)
 X_test = X_test.reshape(len(X_test), 28, 28, 3)
@@ -88,7 +97,7 @@ model.compile(optimizer='adam',
 
 model.summary()
 
-early_stopping = EarlyStopping(monitor='f1_m', mode='max', patience=10)
+early_stopping = EarlyStopping(monitor='f1_m', mode='max', patience=3)
 
 epochs = 50
 
