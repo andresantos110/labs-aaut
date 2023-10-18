@@ -7,6 +7,8 @@ from keras import backend as K
 from tensorflow.keras.callbacks import EarlyStopping
 from imblearn.over_sampling import SMOTE
 from imblearn.combine import SMOTEENN
+from imblearn.under_sampling import EditedNearestNeighbours
+from imblearn.over_sampling import SMOTEN
 
 #DEFINE FUNCTIONS FOR CALCULATING F1 SCORE
 def recall_m(y_true, y_pred):
@@ -44,13 +46,15 @@ Ytrain = np.load('ytrain_Classification1.npy')
 X_train, X_test, Y_train, Y_test = train_test_split(Xtrain,Ytrain,test_size=0.2)
 
 #SMOTE
-smote = SMOTE(random_state=42)
+#smote = SMOTE(random_state=42)
 
 #SMOTEENN
 #over-sampling com SMOTE + under-sampling com ENN (edited nearest neighbours)
 #pode ser viavel, mas é bastante instável (varia muito entre runs).
 
-#smote = SMOTEENN(random_state=42, sampling_strategy = 0.70)
+smote = SMOTEN(sampling_strategy = 0.3, random_state=42)
+
+#smoteenn = SMOTEENN(random_state=42, smote=smote)
 
 X_train, Y_train = smote.fit_resample(X_train, Y_train) #está a dar mal por causa do early stopping? idk
 
@@ -73,16 +77,18 @@ model.add(layers.MaxPooling2D((2, 2)))
 model.add(layers.Conv2D(32, (3, 3), activation='relu'))
 model.add(layers.Flatten())
 model.add(layers.Dense(32, activation='relu'))
-model.add(layers.Dropout(0.2)) #testar melhor dropout. dropout ou early stopping? ou ambos?
+#model.add(layers.Dropout(0.2)) #testar melhor dropout. dropout ou early stopping? ou ambos?
 model.add(layers.Dense(2))
 
 model.compile(optimizer='adam',
-              loss='binary_crossentropy',
+              #loss='binary_crossentropy',
+              #loss='categorical_crossentropy'
+              loss=tf.keras.losses.MeanSquaredError(),
               metrics=['accuracy',f1_m,precision_m, recall_m])
 
 model.summary()
 
-early_stopping = EarlyStopping(monitor='f1_m', mode='max', patience=20)
+early_stopping = EarlyStopping(monitor='f1_m', mode='max', patience=10)
 
 epochs = 50
 
@@ -95,6 +101,7 @@ plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.ylim([0.5, 1])
 plt.legend(loc='lower right')
+#plt.annotate('max val', xy=(2, 1), xycoords='data', xytext=(0.01, .99))
 plt.show()
 
 #EVALUATE MODEL
