@@ -6,8 +6,6 @@ import tensorflow as tf
 from tensorflow.keras import layers, models
 from keras import backend as K
 from tensorflow.keras.callbacks import EarlyStopping
-from sklearn.metrics import balanced_accuracy_score
-
 
 def balanced_accuracy(y_true, y_pred):
     y_pred_binary = tf.round(y_pred)
@@ -81,10 +79,6 @@ for i in range(num_iterations):
             case 2:
                 img_tf = tf.image.flip_up_down(X_train[i])
             case 3:
-                img_tf = tf.image.adjust_saturation(X_train[i], 3)
-            case 4:
-                img_tf = tf.image.adjust_brightness(X_train[i], 0.1)
-            case 5:
                 img_tf = tf.image.rot90(X_train[i])
     
         img_tf_np = img_tf.numpy()
