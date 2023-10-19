@@ -12,6 +12,7 @@ from imblearn.over_sampling import SMOTEN
 from imblearn.over_sampling import SVMSMOTE
 from imblearn.over_sampling import BorderlineSMOTE
 from imblearn.over_sampling import ADASYN
+from sklearn.metrics import balanced_accuracy_score
 
 #DEFINE FUNCTIONS FOR CALCULATING F1 SCORE
 def recall_m(y_true, y_pred):
@@ -48,24 +49,22 @@ Ytrain = np.load('ytrain_Classification1.npy')
 
 X_train, X_test, Y_train, Y_test = train_test_split(Xtrain,Ytrain,test_size=0.2)
 
-#SMOTE
-#smote = SMOTE(random_state=42)
-
 #SMOTEENN
 #over-sampling com SMOTE + under-sampling com ENN (edited nearest neighbours)
 #pode ser viavel, mas é bastante instável (varia muito entre runs).
 
-#smote = SMOTEN(sampling_strategy = 0.3, random_state=42) 
+#SMOTE
+smote = SMOTEN(sampling_strategy = 0.3, random_state=42) 
 
-#smoteenn = SMOTEENN(random_state=42, smote=smote)
+smoteenn = SMOTEENN(random_state=42, smote=smote)
 
-svmsmote = SVMSMOTE(sampling_strategy = 0.3, random_state = 42)
+#svmsmote = SVMSMOTE(sampling_strategy = 0.3, random_state = 42)
 
 #borderlinesmote = BorderlineSMOTE(sampling_strategy = 0.3, random_state = 42)
 
 #adasyn = ADASYN(sampling_strategy = 0.3, random_state = 42)
 
-X_train, Y_train = svmsmote.fit_resample(X_train, Y_train)
+X_train, Y_train = smoteenn.fit_resample(X_train, Y_train)
 
 X_train = X_train.reshape(len(X_train), 28, 28, 3)
 X_test = X_test.reshape(len(X_test), 28, 28, 3)
@@ -90,14 +89,14 @@ model.add(layers.Dense(32, activation='relu'))
 model.add(layers.Dense(2))
 
 model.compile(optimizer='adam',
-              #loss='binary_crossentropy',
+              loss='binary_crossentropy',
               #loss='categorical_crossentropy'
-              loss=tf.keras.losses.MeanSquaredError(),
+              #loss=tf.keras.losses.MeanSquaredError(),
               metrics=['accuracy',f1_m,precision_m, recall_m])
 
 model.summary()
 
-early_stopping = EarlyStopping(monitor='f1_m', mode='max', patience=3)
+early_stopping = EarlyStopping(monitor='f1_m', mode='max', patience=5)
 
 epochs = 50
 
