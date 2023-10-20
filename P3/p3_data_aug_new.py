@@ -5,6 +5,7 @@ from sklearn.model_selection import  train_test_split
 import tensorflow as tf
 from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import EarlyStopping
+from keras.callbacks import ModelCheckpoint
 
 def balanced_accuracy(y_true, y_pred):
     y_true = tf.cast(y_true, dtype=tf.float32)
@@ -67,7 +68,7 @@ while diff != 0:
     random_number = random.randint(0, total_samples-1)
     
     if(Y_train[random_number,1] == 1):
-        operation = random.randint(1,4)
+        operation = random.randint(1,5)
         if operation == 1:
             image = tf.image.flip_left_right(X_train[random_number])
         elif operation == 2:
@@ -76,6 +77,8 @@ while diff != 0:
             image = tf.image.rot90(X_train[random_number])
         elif operation == 4:
             image = tf.roll(X_train[random_number], shift=[-1, 1], axis=[0, 1])
+        elif operation == 5:
+            image = tf.roll(X_train[random_number], shift=[1, -1], axis=[0, 1])
         diff -= 1
         
         #print(operation)
@@ -112,11 +115,12 @@ model.compile(optimizer='adam',
 
 model.summary()
 
-early_stopping = EarlyStopping(monitor='balanced_accuracy', mode='max', patience=10)
+early_stopping = EarlyStopping(monitor='balanced_accuracy', mode='max', patience=20)
+model_checkpoint = ModelCheckpoint('best_model.h5', monitor='balanced_accuracy', mode='max', verbose=0, save_best_only=True)
 
-epochs = 200
+epochs = 100
 
-history = model.fit(X_train, Y_train, epochs = epochs, validation_data = (X_test,Y_test), callbacks = [early_stopping])
+history = model.fit(X_train, Y_train, epochs = epochs, validation_data = (X_test,Y_test), callbacks = [early_stopping, model_checkpoint])
 
 #PLOT ACCURACY
 plt.plot(history.history['balanced_accuracy'], label='balanced_accuracy')
@@ -129,3 +133,13 @@ plt.show()
 
 #EVALUATE MODEL
 test_loss, test_acc, test_bal_acc = model.evaluate(X_test,  Y_test, verbose=2)
+
+
+model.load_weights('best_model.h5')
+
+
+Y_pred = model.predict(Xtest)
+Y_pred = np.around(Y_pred)
+Y_pred = Y_pred.argmax(axis=1)
+
+np.save("Ytest_Classification1.npy", Y_pred)
