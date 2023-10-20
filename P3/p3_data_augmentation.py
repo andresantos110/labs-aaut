@@ -58,8 +58,8 @@ Xtest = Xtest.reshape(len(Xtest), 28, 28, 3)
 X_train = X_train/255.0
 X_test = X_test/255.0
 
-Y_train = tf.keras.utils.to_categorical(Y_train, num_classes = 2)
-Y_test = tf.keras.utils.to_categorical(Y_test, num_classes = 2)
+#Y_train = tf.keras.utils.to_categorical(Y_train, num_classes = 2)
+#Y_test = tf.keras.utils.to_categorical(Y_test, num_classes = 2)
 
 
 #DATA AUGMENTATION
