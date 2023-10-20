@@ -116,7 +116,7 @@ model.compile(optimizer='adam',
 model.summary()
 
 early_stopping = EarlyStopping(monitor='balanced_accuracy', mode='max', patience=20)
-model_checkpoint = ModelCheckpoint('best_model.h5', monitor='balanced_accuracy', mode='max', verbose=0, save_best_only=True)
+model_checkpoint = ModelCheckpoint('best_model.h5', monitor='val_balanced_accuracy', mode='max', verbose=0, save_best_only=True)
 
 epochs = 100
 
