@@ -79,16 +79,7 @@ while diff != 0:
             image = tf.roll(X_train[random_number], shift=[-1, 1], axis=[0, 1])
         elif operation == 5:
             image = tf.roll(X_train[random_number], shift=[1, -1], axis=[0, 1])
-        diff -= 1
-        
-        #print(operation)
-        #plt.imshow(X_train[random_number])
-        #plt.xlabel(operation)
-        #plt.show()
-        #plt.imshow(image)
-        #plt.xlabel(operation)
-        #plt.show()
-        
+        diff -= 1  
         
         image_np = image.numpy()
         image_np = np.reshape(image_np, (1,28,28,3))
@@ -103,7 +94,6 @@ model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 3)))
 model.add(layers.MaxPooling2D((2, 2)))
 model.add(layers.Conv2D(32, (3, 3), activation='relu'))
 model.add(layers.MaxPooling2D((2, 2)))
-#model.add(layers.Conv2D(32, (3, 3), activation='relu'))
 model.add(layers.Dropout(0.2))
 model.add(layers.Flatten())
 model.add(layers.Dense(32, activation='relu'))
@@ -118,7 +108,7 @@ model.summary()
 early_stopping = EarlyStopping(monitor='balanced_accuracy', mode='max', patience=20)
 model_checkpoint = ModelCheckpoint('best_model.h5', monitor='val_balanced_accuracy', mode='max', verbose=0, save_best_only=True)
 
-epochs = 100
+epochs = 200
 
 history = model.fit(X_train, Y_train, epochs = epochs, validation_data = (X_test,Y_test), callbacks = [early_stopping, model_checkpoint])
 
@@ -137,6 +127,7 @@ test_loss, test_acc, test_bal_acc = model.evaluate(X_test,  Y_test, verbose=2)
 
 model.load_weights('best_model.h5')
 
+Xtest = Xtest/255.0
 
 Y_pred = model.predict(Xtest)
 Y_pred = np.around(Y_pred)
