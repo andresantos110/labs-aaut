@@ -1,11 +1,11 @@
 import numpy as np
-import random
 import matplotlib.pyplot as plt
 from sklearn.model_selection import  train_test_split
 import tensorflow as tf
 from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
+from sklearn.utils.class_weight import compute_class_weight
 
 def balanced_accuracy(y_true, y_pred):
     y_true = tf.cast(y_true, dtype=tf.float32)
@@ -52,11 +52,11 @@ total_samples = len(Y_train)
 count_zeros = np.count_nonzero(Y_train == 0)
 count_ones = np.count_nonzero(Y_train == 1)
 
+class_weights = compute_class_weight('balanced', classes=np.unique(Y_train), y=Y_train)
+class_weights_normalized = class_weights / sum(class_weights)
+
 Y_train = tf.keras.utils.to_categorical(Y_train, num_classes = 6)
 Y_test = tf.keras.utils.to_categorical(Y_test, num_classes = 6)
-
-#TRATAR DAS MERDAS INBALANCED AQUI!!!
-#testar class weights!
 
 #MODEL DEFINITION
 model = models.Sequential()
@@ -80,7 +80,9 @@ model_checkpoint = ModelCheckpoint('best_model.h5', monitor='val_balanced_accura
 
 epochs = 200
 
-history = model.fit(X_train, Y_train, epochs = epochs, validation_data = (X_test,Y_test), callbacks = [early_stopping, model_checkpoint])
+history = model.fit(X_train, Y_train, epochs = epochs, validation_data = (X_test,Y_test), 
+                    #class_weight=class_weights_normalized,
+                    callbacks = [early_stopping, model_checkpoint])
 
 #PLOT ACCURACY
 plt.plot(history.history['balanced_accuracy'], label='balanced_accuracy')
