@@ -50,7 +50,7 @@ X_test = X_test/255.0
 
 total_samples = len(Y_train)
 
-count_images = np.zeros(6)
+count_images = np.zeros(6, dtype=np.int64)
 
 count_images[0] = np.count_nonzero(Y_train == 0)
 count_images[1] = np.count_nonzero(Y_train == 1)
@@ -59,13 +59,24 @@ count_images[3] = np.count_nonzero(Y_train == 3)
 count_images[4] = np.count_nonzero(Y_train == 4)
 count_images[5] = np.count_nonzero(Y_train == 5)
 
+class_ini_index = np.zeros(6, dtype=np.int64)
+
+class_ini_index[1] = count_images[0]
+class_ini_index[2] = count_images[0] + count_images[1]
+class_ini_index[3] = count_images[0:3].sum()
+class_ini_index[4] = count_images[0:4].sum()
+class_ini_index[5] = count_images[0:5].sum()
+
 biggest_class = 0
 diff = np.zeros(6)
+
 for i in range(1, 5):
     if(count_images[i] > count_images[biggest_class]):
         biggest_class = i
+        #class_ini_index[i] = int(count_images[0:i].sum())
 for i in range(0, 5):
     diff[i] = count_images[biggest_class] - count_images[i]
+
 
 print("Images per category:"
       "\n0: ", count_images[0], 
@@ -74,8 +85,12 @@ print("Images per category:"
       "\n3: ", count_images[3], 
       "\n4: ", count_images[4], 
       "\n5: ", count_images[5],
-      "biggest category: ", biggest_class)
+      "\nbiggest category: ", biggest_class,
+      "\nclass_ini_index = ", class_ini_index)
 
+Y_sorted_indexes = np.argsort(Y_train)
+
+X_train_sorted = X_train[Y_sorted_indexes]
 
 #class_weights = compute_class_weight('balanced', classes=np.unique(Y_train), y=Y_train)
 #class_weights_normalized = class_weights / sum(class_weights)
@@ -89,6 +104,9 @@ row = np.zeros((6, 6))
 
 np.fill_diagonal(row, 1)
 
+print("row: ", row[i])
+print("Y_train rand:", Y_train[234])
+
 #row = np.asmatrix([[0, 1, 0, 0, 0, 0]])
 
 # falta fazer: fazer uma copia de X_train e Y_train ordenados por classes para iterar facilmente no data augmentation,
@@ -96,45 +114,52 @@ np.fill_diagonal(row, 1)
 
 initdiff = np.copy(diff)
 
-print("running data augmentation.")
+print("Running data augmentation.\n")
 
 for i in range(0, 6):
-    aux = 0
+    j = 0
     while diff[i] !=0:
-        aux += aux
-        if(aux % 100 == 0 and diff[i] != initdiff[i]):
-            print("Data Augmentation Progress:", "{:.2f}".format(((initdiff - diff[i]) / initdiff ) * 100),"%", " of class ", i)
+    #while diff[i] > initdiff[i]*(9.8/10):   # para quando não se quer esperar 15 min 
+        j += j
+        if(j % 100 == 0 and diff[i] != initdiff[i]):
+            print("Data Augmentation Progress:", "{:.2f}".format(((initdiff[i] - diff[i]) / initdiff[i] ) * 100),
+                  "%",
+                 " of class ", i,
+                 " X size: ", X_train.shape,
+                 " Y size: ", Y_train.shape,
+                 end='\r')
         
-        random_number = random.randint(0, total_samples-1)
         
-        if(Y_train[random_number,i] == 1):
-            operation = random.randint(1,5)
-            if operation == 1:
-                image = tf.image.flip_left_right(X_train[random_number])
-            elif operation == 2:
-                image = tf.image.flip_up_down(X_train[random_number])
-            elif operation == 3:
-                image = tf.image.rot90(X_train[random_number])
-            elif operation == 4:
-                image = tf.roll(X_train[random_number], shift=[-1, 1], axis=[0, 1])
-            elif operation == 5:
-                image = tf.roll(X_train[random_number], shift=[1, -1], axis=[0, 1])
-            diff[i] -= 1
-            
-            #print(operation)
-            #plt.imshow(X_train[random_number])
-            #plt.xlabel(operation)
-            #plt.show()
-            #plt.imshow(image)
-            #plt.xlabel(operation)
-            #plt.show()
-            
-            
-            image_np = image.numpy()
-            image_np = np.reshape(image_np, (1,28,28,3))
-            
-            X_train = np.append(X_train, image_np, axis = 0)
-            Y_train = np.append(Y_train, row[i], axis = 0)
+        operation = random.randint(1,5)
+        if operation == 1:
+            image = tf.image.flip_left_right(X_train_sorted[j + class_ini_index[i]])
+        elif operation == 2:
+            image = tf.image.flip_up_down(X_train_sorted[j + class_ini_index[i]])
+        elif operation == 3:
+            image = tf.image.rot90(X_train_sorted[j + class_ini_index[i]])
+        elif operation == 4:
+            image = tf.roll(X_train_sorted[j + class_ini_index[i]], shift=[-1, 1], axis=[0, 1])
+        elif operation == 5:
+            image = tf.roll(X_train_sorted[j + class_ini_index[i]], shift=[1, -1], axis=[0, 1])
+        diff[i] -= 1
+
+        if(j>= count_images[i]):
+            j = 0
+        
+        #print(operation)
+        #plt.imshow(X_train[random_number])
+        #plt.xlabel(operation)
+        #plt.show()
+        #plt.imshow(image)
+        #plt.xlabel(operation)
+        #plt.show()
+        
+        
+        image_np = image.numpy()
+        image_np = np.reshape(image_np, (1,28,28,3))
+        
+        X_train = np.append(X_train, image_np, axis = 0)
+        Y_train = np.append(Y_train, row[:,i].reshape(-1, 6), axis = 0)
 
 #MODEL DEFINITION
 model = models.Sequential()
@@ -156,10 +181,10 @@ model.summary()
 early_stopping = EarlyStopping(monitor='balanced_accuracy', mode='max', patience=20)
 model_checkpoint = ModelCheckpoint('best_model.h5', monitor='val_balanced_accuracy', mode='max', verbose=0, save_best_only=True)
 
-epochs = 200
+epochs = 100
 
 history = model.fit(X_train, Y_train, epochs = epochs, validation_data = (X_test,Y_test), 
-                    class_weight=class_weights,
+                    #class_weight=class_weights,
                     callbacks = [early_stopping, model_checkpoint])
 
 #PLOT ACCURACY
