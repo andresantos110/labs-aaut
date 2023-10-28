@@ -7,6 +7,8 @@ from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
 from sklearn.utils.class_weight import compute_class_weight
+from keras import backend as K
+from keras.losses import CategoricalFocalCrossentropy
 
 def balanced_accuracy(y_true, y_pred):
     y_true = tf.cast(y_true, dtype=tf.float32)
@@ -96,8 +98,8 @@ Y_sorted_indexes = np.argsort(Y_train)
 
 X_train_sorted = X_train[Y_sorted_indexes]
 
-class_weights = compute_class_weight('balanced', classes=np.unique(Y_train), y=Y_train)
-class_weights_dict = dict(enumerate(class_weights))
+#class_weights = compute_class_weight('balanced', classes=np.unique(Y_train), y=Y_train)
+#class_weights_dict = dict(enumerate(class_weights))
 #class_weights_normalized = class_weights / sum(class_weights)
 
 Y_train = tf.keras.utils.to_categorical(Y_train, num_classes = 6)
@@ -169,14 +171,8 @@ for i in range(0, 6):
         X_train = np.append(X_train, image_np, axis = 0)
         Y_train = np.append(Y_train, row[:,i].reshape(-1, 6), axis = 0)
 
-        image = tf.image.central_crop(X_train_sorted[j + class_ini_index[i]], 0.5)
-        image = tf.image.resize(image, [28,28])
-        image_np = image.numpy()
-        image_np = np.reshape(image_np, (1,28,28,3))
-        X_train = np.append(X_train, image_np, axis = 0)
-        Y_train = np.append(Y_train, row[:,i].reshape(-1, 6), axis = 0)
 
-        diff[i] -= 7
+        diff[i] -= 6
 
         
         #print(operation)
@@ -203,6 +199,7 @@ model.add(layers.Dense(6, activation='softmax'))
 
 model.compile(optimizer='adam',
               loss='categorical_crossentropy',
+              #loss=tf.keras.losses.CategoricalFocalCrossentropy(),
               metrics=['accuracy', balanced_accuracy])
 
 model.summary()
@@ -210,10 +207,10 @@ model.summary()
 early_stopping = EarlyStopping(monitor='balanced_accuracy', mode='max', patience=20)
 model_checkpoint = ModelCheckpoint('best_model.h5', monitor='val_balanced_accuracy', mode='max', verbose=0, save_best_only=True)
 
-epochs = 100
+epochs = 120
 
 history = model.fit(X_train, Y_train, epochs = epochs, validation_data = (X_val,Y_val), 
-                    class_weight=class_weights_dict,
+                    #class_weight=class_weights_dict,
                     callbacks = [early_stopping, model_checkpoint])
 
 #PLOT ACCURACY
