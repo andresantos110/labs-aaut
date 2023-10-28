@@ -96,7 +96,8 @@ Y_sorted_indexes = np.argsort(Y_train)
 
 X_train_sorted = X_train[Y_sorted_indexes]
 
-#class_weights = compute_class_weight('balanced', classes=np.unique(Y_train), y=Y_train)
+class_weights = compute_class_weight('balanced', classes=np.unique(Y_train), y=Y_train)
+class_weights_dict = dict(enumerate(class_weights))
 #class_weights_normalized = class_weights / sum(class_weights)
 
 Y_train = tf.keras.utils.to_categorical(Y_train, num_classes = 6)
@@ -114,16 +115,13 @@ print("Y_train rand:", Y_train[234])
 
 #row = np.asmatrix([[0, 1, 0, 0, 0, 0]])
 
-# falta fazer: fazer uma copia de X_train e Y_train ordenados por classes para iterar facilmente no data augmentation,
-# colocar as novas imagens num vetor y_temp, no fim dar shuffle e adicionar ao Y_train original
-
 initdiff = np.copy(diff)
 
 print("Running data augmentation.\n")
 
 for i in range(0, 6):
     j = 0
-    while j < count_images[i] and diff[i] > initdiff[i]*(3/10):
+    while j < count_images[i] and diff[i] > initdiff[i]*(10/10):
         j += j
         if(j % 100 == 0 and diff[i] != initdiff[i]):
             print("Data Augmentation Progress:", "{:.2f}".format(((initdiff[i] - diff[i]) / initdiff[i] ) * 100),
@@ -212,10 +210,10 @@ model.summary()
 early_stopping = EarlyStopping(monitor='balanced_accuracy', mode='max', patience=20)
 model_checkpoint = ModelCheckpoint('best_model.h5', monitor='val_balanced_accuracy', mode='max', verbose=0, save_best_only=True)
 
-epochs = 70
+epochs = 100
 
 history = model.fit(X_train, Y_train, epochs = epochs, validation_data = (X_val,Y_val), 
-                    #class_weight=class_weights,
+                    class_weight=class_weights_dict,
                     callbacks = [early_stopping, model_checkpoint])
 
 #PLOT ACCURACY
