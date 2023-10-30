@@ -8,7 +8,6 @@ from tensorflow.keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
 from sklearn.utils.class_weight import compute_class_weight
 from keras import backend as K
-from keras.losses import CategoricalFocalCrossentropy
 
 def balanced_accuracy(y_true, y_pred):
     y_true = tf.cast(y_true, dtype=tf.float32)
@@ -79,7 +78,6 @@ diff = np.zeros(6)
 for i in range(1, 5):
     if(count_images[i] > count_images[biggest_class]):
         biggest_class = i
-        #class_ini_index[i] = int(count_images[0:i].sum())
 for i in range(0, 5):
     diff[i] = count_images[biggest_class] - count_images[i]
 
@@ -98,6 +96,8 @@ Y_sorted_indexes = np.argsort(Y_train)
 
 X_train_sorted = X_train[Y_sorted_indexes]
 
+
+#FOR USE WITHOUT DATA AUGMENTATION
 #class_weights = compute_class_weight('balanced', classes=np.unique(Y_train), y=Y_train)
 #class_weights_dict = dict(enumerate(class_weights))
 #class_weights_normalized = class_weights / sum(class_weights)
@@ -112,18 +112,13 @@ row = np.zeros((6, 6))
 
 np.fill_diagonal(row, 1)
 
-print("row: ", row[i])
-print("Y_train rand:", Y_train[234])
-
-#row = np.asmatrix([[0, 1, 0, 0, 0, 0]])
-
 initdiff = np.copy(diff)
 
 print("Running data augmentation.\n")
 
 for i in range(0, 6):
     j = 0
-    while j < count_images[i] and diff[i] > initdiff[i]*(10/10):
+    while j < count_images[i] and diff[i] > initdiff[i]*(0.9):
         j += j
         if(j % 100 == 0 and diff[i] != initdiff[i]):
             print("Data Augmentation Progress:", "{:.2f}".format(((initdiff[i] - diff[i]) / initdiff[i] ) * 100),
@@ -182,6 +177,12 @@ for i in range(0, 6):
         #plt.imshow(image)
         #plt.xlabel(operation)
         #plt.show()
+    
+#WEIGHTS FOR USE WITH DATA AUGMENTATION
+class_indices = np.argmax(Y_train, axis=1)
+class_weights = compute_class_weight('balanced', classes=np.unique(class_indices), y=class_indices)
+class_weights_dict = dict(enumerate(class_weights))
+        
 
 #MODEL DEFINITION
 model = models.Sequential()
@@ -194,7 +195,7 @@ model.add(layers.MaxPooling2D((2, 2)))
 model.add(layers.Dropout(0.2))
 model.add(layers.Flatten())
 model.add(layers.Dense(128, activation='relu'))
-model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(32, activation='relu'))
 model.add(layers.Dense(6, activation='softmax'))
 
 model.compile(optimizer='adam',
@@ -207,10 +208,10 @@ model.summary()
 early_stopping = EarlyStopping(monitor='balanced_accuracy', mode='max', patience=20)
 model_checkpoint = ModelCheckpoint('best_model.h5', monitor='val_balanced_accuracy', mode='max', verbose=0, save_best_only=True)
 
-epochs = 120
+epochs = 200
 
 history = model.fit(X_train, Y_train, epochs = epochs, validation_data = (X_val,Y_val), 
-                    #class_weight=class_weights_dict,
+                    class_weight=class_weights_dict,
                     callbacks = [early_stopping, model_checkpoint])
 
 #PLOT ACCURACY
@@ -238,7 +239,6 @@ model.load_weights('best_model.h5')
 Xtest = Xtest/255.0
 
 Ypred = model.predict(Xtest)
-Ypred = np.around(Y_pred)
 Ypred = Ypred.argmax(axis=1)
 
-np.save("Ytest_Classification1.npy", Ypred)
+np.save("Ytest_Classification2.npy", Ypred)

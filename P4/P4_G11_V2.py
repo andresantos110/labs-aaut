@@ -181,7 +181,7 @@ model.summary()
 early_stopping = EarlyStopping(monitor='balanced_accuracy', mode='max', patience=20)
 model_checkpoint = ModelCheckpoint('best_model.h5', monitor='val_balanced_accuracy', mode='max', verbose=0, save_best_only=True)
 
-epochs = 100
+epochs = 50
 
 history = model.fit(X_train, Y_train, epochs = epochs, validation_data = (X_test,Y_test), 
                     #class_weight=class_weights,
@@ -208,4 +208,4 @@ Y_pred = model.predict(Xtest)
 Y_pred = np.around(Y_pred)
 Y_pred = Y_pred.argmax(axis=1)
 
-np.save("Ytest_Classification1.npy", Y_pred)
+np.save("Ytest_Classification2.npy", Y_pred)
