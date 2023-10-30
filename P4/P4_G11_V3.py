@@ -179,9 +179,9 @@ for i in range(0, 6):
         #plt.show()
     
 #WEIGHTS FOR USE WITH DATA AUGMENTATION
-class_indices = np.argmax(Y_train, axis=1)
-class_weights = compute_class_weight('balanced', classes=np.unique(class_indices), y=class_indices)
-class_weights_dict = dict(enumerate(class_weights))
+#class_indices = np.argmax(Y_train, axis=1)
+#class_weights = compute_class_weight('balanced', classes=np.unique(class_indices), y=class_indices)
+#class_weights_dict = dict(enumerate(class_weights))
         
 
 #MODEL DEFINITION
@@ -211,7 +211,7 @@ model_checkpoint = ModelCheckpoint('best_model.h5', monitor='val_balanced_accura
 epochs = 200
 
 history = model.fit(X_train, Y_train, epochs = epochs, validation_data = (X_val,Y_val), 
-                    class_weight=class_weights_dict,
+                    #class_weight=class_weights_dict,
                     callbacks = [early_stopping, model_checkpoint])
 
 #PLOT ACCURACY
